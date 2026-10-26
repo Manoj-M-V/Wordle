@@ -1,12 +1,37 @@
-const fs = require('fs');
-const path = require('path');
+const DICTIONARY_API_URL = 'https://api.dictionaryapi.dev/api/v2/entries/en';
 
-const WORDS_FILE = path.resolve(__dirname, '../../../5-letter-words.txt');
-const words = fs.readFileSync(WORDS_FILE, 'utf-8')
-  .split(/\r?\n/)
-  .map((word) => word.trim().toLowerCase())
-  .filter((word) => /^[a-z]{5}$/.test(word));
+async function isValidWord(word) {
+  if (typeof word !== 'string') {
+    return false;
+  }
 
-const VALID_WORDS = new Set(words);
+  const normalizedWord = word.trim().toLowerCase();
+  if (!/^[a-z]{5}$/.test(normalizedWord)) {
+    return false;
+  }
 
-module.exports = VALID_WORDS;
+  const response = await fetch(
+    `${DICTIONARY_API_URL}/${encodeURIComponent(normalizedWord)}`,
+    { signal: AbortSignal.timeout(5000) }
+  );
+
+  if (response.status === 404) {
+    return false;
+  }
+
+  if (!response.ok) {
+    throw new Error(`Dictionary API returned status ${response.status}`);
+  }
+
+  const entries = await response.json();
+  if (!Array.isArray(entries)) {
+    throw new Error('Dictionary API returned an invalid response');
+  }
+
+  return entries.some((entry) =>
+    typeof entry?.word === 'string' &&
+    entry.word.toLowerCase() === normalizedWord
+  );
+}
+
+module.exports = isValidWord;

@@ -134,7 +134,7 @@ export function useWordle({ onGameEnd, hardMode }) {
       });
 
       if (res.status === 422) {
-        showToast('Not in word list');
+        showToast('Not a valid word');
         setShakingRow(guesses.length);
         setTimeout(() => setShakingRow(null), 600);
         return;

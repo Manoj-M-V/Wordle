@@ -48,8 +48,8 @@ A feature-complete, full-stack clone of the New York Times Wordle game, built wi
 - Share button appears after game completion.
 
 ### 🔤 Word Validation
-- Backend validates every submitted guess against a dictionary of **valid 5-letter English words**.
-- Invalid words are rejected with a "Not in word list" message.
+- Backend validates every submitted guess against the [Free Dictionary API](https://dictionaryapi.dev/).
+- Invalid words are rejected with a "Not a valid word" message.
 
 ### ⏳ Countdown Timer
 - Displays a **live countdown** to the next daily word refresh.
@@ -243,7 +243,7 @@ VITE_API_URL=http://localhost:3001
 | Backend | Node.js 18+, Express 4 |
 | Data Persistence | localStorage (client-side) |
 | API Communication | Fetch API |
-| Word Database | Curated JS word lists |
+| Word Database | Curated daily answers; Free Dictionary API for guess validation |
 | Animations | CSS Keyframe Animations |
 
 ---

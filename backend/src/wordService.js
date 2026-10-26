@@ -1,33 +1,7 @@
-const fs   = require('fs');
-const path = require('path');
-
-// ── Load the word list from the shared txt file ──────────────────────────────
-// The file lives at the repo root: <project>/5-letter-words.txt
-const WORDS_FILE = path.resolve(__dirname, '../../5-letter-words.txt');
-
-let VALID_WORDS; // Set<string>  – lowercase
-let ANSWERS;     // string[]     – lowercase (all 5-letter words make valid answers)
-
-function loadWordList() {
-  const raw = fs.readFileSync(WORDS_FILE, 'utf-8');
-  const words = raw
-    .split(/\r?\n/)
-    .map((w) => w.trim().toLowerCase())
-    .filter((w) => /^[a-z]{5}$/.test(w)); // keep only clean 5-letter words
-
-  VALID_WORDS = new Set(words);
-  ANSWERS     = words; // every word in the list is a potential answer
-  console.log(`📖 Loaded ${VALID_WORDS.size} words from ${WORDS_FILE}`);
-}
-
-// Load immediately on require
-loadWordList();
-
-// Hot-reload when the file changes (useful during dev)
-fs.watch(WORDS_FILE, () => {
-  console.log('📖 Word list changed — reloading...');
-  loadWordList();
-});
+const ANSWERS = require('./words/answers')
+  .map((word) => word.trim().toLowerCase())
+  .filter((word) => /^[a-z]{5}$/.test(word));
+const isValidWord = require('./words/validWords');
 
 /**
  * Get today's word based on UTC date.
@@ -103,13 +77,6 @@ function evaluateGuess(guess, answer) {
   }
 
   return result;
-}
-
-/**
- * Check if a word is valid (present in the loaded word list).
- */
-function isValidWord(word) {
-  return VALID_WORDS.has(word.toLowerCase());
 }
 
 module.exports = { getTodayWordInfo, getMsUntilNextWord, evaluateGuess, isValidWord };

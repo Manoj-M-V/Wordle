@@ -33,17 +33,22 @@ app.get('/api/word/length', (req, res) => {
 });
 
 // Validate a word — checks if it's a real word
-app.get('/api/word/validate/:word', (req, res) => {
+app.get('/api/word/validate/:word', async (req, res) => {
   const { word } = req.params;
   if (!word || word.length !== 5) {
     return res.status(400).json({ valid: false, message: 'Word must be exactly 5 letters' });
   }
-  const valid = isValidWord(word);
-  res.json({ valid });
+  try {
+    const valid = await isValidWord(word);
+    res.json({ valid });
+  } catch (error) {
+    console.error('Dictionary API validation failed:', error);
+    res.status(503).json({ valid: false, error: 'Dictionary service unavailable' });
+  }
 });
 
 // Submit a guess and get color feedback
-app.post('/api/word/guess', (req, res) => {
+app.post('/api/word/guess', async (req, res) => {
   const { guess } = req.body;
 
   if (!guess || typeof guess !== 'string') {
@@ -60,8 +65,13 @@ app.post('/api/word/guess', (req, res) => {
     return res.status(400).json({ error: 'Guess must contain only letters' });
   }
 
-  if (!isValidWord(cleanGuess)) {
-    return res.status(422).json({ error: 'Not in word list' });
+  try {
+    if (!(await isValidWord(cleanGuess))) {
+      return res.status(422).json({ error: 'Not a valid word' });
+    }
+  } catch (error) {
+    console.error('Dictionary API validation failed:', error);
+    return res.status(503).json({ error: 'Dictionary service unavailable' });
   }
 
   const { word, wordNumber, date } = getTodayWordInfo();
